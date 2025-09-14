@@ -63,6 +63,10 @@ void Error_Handler(void);
 #define LAN_TX_LED_GPIO_Port GPIOD
 #define LAN_RX_LED_Pin GPIO_PIN_6
 #define LAN_RX_LED_GPIO_Port GPIOC
+#define PMDLL_CONFIG_Pin GPIO_PIN_7
+#define PMDLL_CONFIG_GPIO_Port GPIOC
+#define PMDLL_STATUS_Pin GPIO_PIN_8
+#define PMDLL_STATUS_GPIO_Port GPIOC
 #define DEBUG_TX_Pin GPIO_PIN_9
 #define DEBUG_TX_GPIO_Port GPIOA
 #define DEBUG_RX_Pin GPIO_PIN_10
@@ -73,8 +77,6 @@ void Error_Handler(void);
 #define RS485_RX_GPIO_Port GPIOC
 #define PMDLL_RESET_Pin GPIO_PIN_1
 #define PMDLL_RESET_GPIO_Port GPIOD
-#define PMDLL_STATUS_Pin GPIO_PIN_2
-#define PMDLL_STATUS_GPIO_Port GPIOD
 #define LAN_LINK_LED_Pin GPIO_PIN_3
 #define LAN_LINK_LED_GPIO_Port GPIOD
 

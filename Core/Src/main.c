@@ -43,6 +43,7 @@
 IWDG_HandleTypeDef hiwdg;
 
 UART_HandleTypeDef huart4;
+UART_HandleTypeDef huart5;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
@@ -55,6 +56,7 @@ static void MX_GPIO_Init(void);
 static void MX_UART4_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_IWDG_Init(void);
+static void MX_UART5_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -96,6 +98,7 @@ int main(void)
   MX_UART4_Init();
   MX_USART1_UART_Init();
   MX_IWDG_Init();
+  MX_UART5_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -219,6 +222,39 @@ static void MX_UART4_Init(void)
 }
 
 /**
+  * @brief UART5 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_UART5_Init(void)
+{
+
+  /* USER CODE BEGIN UART5_Init 0 */
+
+  /* USER CODE END UART5_Init 0 */
+
+  /* USER CODE BEGIN UART5_Init 1 */
+
+  /* USER CODE END UART5_Init 1 */
+  huart5.Instance = UART5;
+  huart5.Init.BaudRate = 115200;
+  huart5.Init.WordLength = UART_WORDLENGTH_8B;
+  huart5.Init.StopBits = UART_STOPBITS_1;
+  huart5.Init.Parity = UART_PARITY_NONE;
+  huart5.Init.Mode = UART_MODE_TX_RX;
+  huart5.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart5.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart5) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN UART5_Init 2 */
+
+  /* USER CODE END UART5_Init 2 */
+
+}
+
+/**
   * @brief USART1 Initialization Function
   * @param None
   * @retval None
@@ -271,10 +307,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(PHY_RESET_GPIO_Port, PHY_RESET_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(PHY_RESET_GPIO_Port, PHY_RESET_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(PMDLL_RESET_GPIO_Port, PMDLL_RESET_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(PMDLL_CONFIG_GPIO_Port, PMDLL_CONFIG_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(PMDLL_RESET_GPIO_Port, PMDLL_RESET_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : PHY_RESET_Pin */
   GPIO_InitStruct.Pin = PHY_RESET_Pin;
@@ -283,17 +322,24 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(PHY_RESET_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LAN_TX_LED_Pin PMDLL_STATUS_Pin LAN_LINK_LED_Pin */
-  GPIO_InitStruct.Pin = LAN_TX_LED_Pin|PMDLL_STATUS_Pin|LAN_LINK_LED_Pin;
+  /*Configure GPIO pins : LAN_TX_LED_Pin LAN_LINK_LED_Pin */
+  GPIO_InitStruct.Pin = LAN_TX_LED_Pin|LAN_LINK_LED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LAN_RX_LED_Pin */
-  GPIO_InitStruct.Pin = LAN_RX_LED_Pin;
+  /*Configure GPIO pins : LAN_RX_LED_Pin PMDLL_STATUS_Pin */
+  GPIO_InitStruct.Pin = LAN_RX_LED_Pin|PMDLL_STATUS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(LAN_RX_LED_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PMDLL_CONFIG_Pin */
+  GPIO_InitStruct.Pin = PMDLL_CONFIG_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(PMDLL_CONFIG_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PMDLL_RESET_Pin */
   GPIO_InitStruct.Pin = PMDLL_RESET_Pin;
