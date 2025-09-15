@@ -1,0 +1,10 @@
+../Core/Src/uart.c:38:13:uart_receive	2
+../Core/Src/uart.c:55:13:uart_transmit_str	3
+../Core/Src/uart.c:79:13:uart_transmit_ch	3
+../Core/Src/uart.c:97:6:uart5_send	1
+../Core/Src/uart.c:105:13:uart5_transmit_ch	3
+../Core/Src/uart.c:123:6:HAL_UART_RxCpltCallback	5
+../Core/Src/uart.c:152:6:uart4_Init	1
+../Core/Src/uart.c:158:6:uart5_Init	1
+../Core/Src/uart.c:165:6:uart4_interupt_set	2
+../Core/Src/uart.c:178:6:uart5_interupt_set	2

@@ -53,6 +53,7 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
+void flash_jump_to_app(void);
 
 /* USER CODE END EFP */
 

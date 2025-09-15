@@ -1,0 +1,12 @@
+../Core/Src/main.c:77:6:phy_reset	1
+../Core/Src/main.c:83:6:pmdll_reset	1
+../Core/Src/main.c:91:6:flash_jump_to_app	2
+../Core/Src/main.c:106:6:flash_protect	4
+../Core/Src/main.c:150:5:main	15
+../Core/Src/main.c:307:6:SystemClock_Config	3
+../Core/Src/main.c:354:13:MX_IWDG_Init	2
+../Core/Src/main.c:382:13:MX_UART4_Init	2
+../Core/Src/main.c:415:13:MX_UART5_Init	2
+../Core/Src/main.c:448:13:MX_USART1_UART_Init	2
+../Core/Src/main.c:481:13:MX_GPIO_Init	1
+../Core/Src/main.c:550:6:Error_Handler	1

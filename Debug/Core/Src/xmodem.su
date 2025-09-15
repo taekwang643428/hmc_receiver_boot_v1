@@ -1,0 +1,5 @@
+../Core/Src/xmodem.c:33:6:xmodem_receive	16	static
+../Core/Src/xmodem.c:131:17:xmodem_calc_crc	24	static
+../Core/Src/xmodem.c:158:22:xmodem_handle_packet	1056	static
+../Core/Src/xmodem.c:266:22:xmodem_error_handler	24	static
+../Core/Src/xmodem.c:295:14:flash_write	32	static

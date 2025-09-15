@@ -21,6 +21,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "xmodem.h"
+#include "uart.h"
+#include "flash_if.h"
 
 /* USER CODE END Includes */
 
@@ -48,6 +51,13 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 
+typedef  void (*pFunction)(void);
+
+pFunction JumpToApplication;
+uint32_t JumpAddress;
+uint32_t FlashProtection = 0;
+
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -64,6 +74,73 @@ static void MX_UART5_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+void phy_reset(void)
+{
+    HAL_GPIO_WritePin(PHY_RESET_GPIO_Port, PHY_RESET_Pin, GPIO_PIN_RESET);
+    HAL_Delay(100);
+    HAL_GPIO_WritePin(PHY_RESET_GPIO_Port, PHY_RESET_Pin, GPIO_PIN_SET);
+}
+void pmdll_reset(void)
+{
+    HAL_GPIO_WritePin(PMDLL_RESET_GPIO_Port, PMDLL_RESET_Pin, GPIO_PIN_RESET);
+    HAL_Delay(100);
+    HAL_GPIO_WritePin(PMDLL_RESET_GPIO_Port, PMDLL_RESET_Pin, GPIO_PIN_SET);
+}
+
+
+void flash_jump_to_app(void)
+{
+    /* Test if user code is programmed starting from address "APPLICATION_ADDRESS" */
+    if (((*(__IO uint32_t*)APPLICATION_ADDRESS) & 0x2FFE0000 ) == 0x20000000)
+    {
+      /* Jump to user application */
+      JumpAddress = *(__IO uint32_t*) (APPLICATION_ADDRESS + 4);
+      JumpToApplication = (pFunction) JumpAddress;
+      /* Initialize user application's Stack Pointer */
+      __set_MSP(*(__IO uint32_t*) APPLICATION_ADDRESS);
+      JumpToApplication();
+   }
+
+}
+
+void flash_protect(void)
+{
+	if (FlashProtection != FLASHIF_PROTECTION_NONE)
+	{
+	/* Disable the write protection */
+		if (FLASH_If_WriteProtectionConfig(OB_WRPSTATE_DISABLE) == HAL_OK)
+		{
+			//Serial_PutString((uint8_t *)"Write Protection disabled...\r\n");
+			//Serial_PutString((uint8_t *)"System will now restart...\r\n");
+			/* Launch the option byte loading */
+			HAL_FLASH_OB_Launch();
+			/* Ulock the flash */
+			HAL_FLASH_Unlock();
+		}
+		else
+		{
+			//Serial_PutString((uint8_t *)"Error: Flash write un-protection failed...\r\n");
+		}
+	}
+	else
+	{
+		if (FLASH_If_WriteProtectionConfig(OB_WRPSTATE_ENABLE) == HAL_OK)
+		{
+			//Serial_PutString((uint8_t *)"Write Protection enabled...\r\n");
+			//Serial_PutString((uint8_t *)"System will now restart...\r\n");
+			/* Launch the option byte loading */
+			HAL_FLASH_OB_Launch();
+		}
+		else
+		{
+			//Serial_PutString((uint8_t *)"Error: Flash write protection failed...\r\n");
+		}
+	}
+}
+
+
+
+
 /* USER CODE END 0 */
 
 /**
@@ -75,6 +152,10 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
 
+	int i;
+	uint8_t rdata;
+	int setup = 0;
+	uint8_t temp_data;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -101,12 +182,117 @@ int main(void)
   MX_UART5_Init();
   /* USER CODE BEGIN 2 */
 
+
+  uart_transmit_str((uint8_t*)"\n\r================================\n\r");
+  uart_transmit_str((uint8_t*)"UART Bootloader Ver:1.1\n\r");
+  /* Test if any sector of Flash memory where user application will be loaded is write protected */
+  FlashProtection = FLASH_If_GetWriteProtectionStatus();
+
+  if(FlashProtection != FLASHIF_PROTECTION_NONE)
+  {
+  uart_transmit_str((uint8_t *)"Protection  enabled\n\r");
+  }
+  uart_transmit_str((uint8_t *)"J : Jump to Main\n\r");
+  uart_transmit_str((uint8_t *)"~ : Firmware Update(xmodem)\n\r");
+  uart_transmit_str((uint8_t *)"S : DataLink Setup\n\r");
+  uart_transmit_str((uint8_t *)"P : DataLink Serial\n\r");
+  uart_transmit_str((uint8_t *)"After 5 seconds,  Auto Jump to Main\n\r");
+
+  for(i = 0; i < 50; i++)
+  {
+      //HAL_Delay(100);
+      if(setup == 0)
+      {
+          if(i%10 == 0)
+          {
+              uart_transmit_ch((uint8_t)('1'+(i/10)));
+              //                  uart_transmit_str((uint8_t*)"\n\r");
+              //uart_transmit_str((uint8_t *)"\033[F"); // Move cursor to the previous line
+          }
+      }
+      if(HAL_UART_Receive(&huart4, (uint8_t*)&rdata, 1, 100) == HAL_OK)
+      {
+          if(rdata == 'J')
+          {
+              setup = 0;
+              i = 0;
+              HAL_GPIO_WritePin(PHY_RESET_GPIO_Port, PHY_RESET_Pin, GPIO_PIN_SET);
+              flash_jump_to_app();
+          }
+          else if(rdata == '~')
+          {
+              setup = 1;
+              HAL_GPIO_WritePin(PHY_RESET_GPIO_Port, PHY_RESET_Pin, GPIO_PIN_SET);
+              i = 0;
+              break;
+          }
+          else if(rdata == 'S')
+          {
+              uart_transmit_str((uint8_t *)"DataLink Setup start\n\r");
+              setup = 2;
+              i = 0;
+              HAL_GPIO_WritePin(PHY_RESET_GPIO_Port, PHY_RESET_Pin, GPIO_PIN_RESET);
+              break;
+          }
+          else if(rdata == 'P')
+          {
+              uart_transmit_str((uint8_t *)"DataLink Serial start\n\r");
+              uart_transmit_str((uint8_t *)"waiting......\n\r");
+              setup = 3;
+              i = 0;
+              HAL_GPIO_WritePin(PHY_RESET_GPIO_Port, PHY_RESET_Pin, GPIO_PIN_RESET);
+              uart4_interupt_set(1);
+              uart5_interupt_set(1);
+              break;
+          }
+      }
+
+  }
+
+  if(setup == 0)
+  {
+      flash_jump_to_app();
+  }
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
+
+	  if(setup == 1)
+	          {
+	          /* Turn on the green LED to indicate, that we are in bootloader mode.*/
+	          //	HAL_GPIO_WritePin(GPIOC, LD3_Pin, GPIO_PIN_SET);
+	              /* Ask for new data and start the Xmodem protocol. */
+	              uart_transmit_str((uint8_t*)"\n\rPlease send a new binary file with Xmodem protocol to update the firmware.\n\r");
+	              xmodem_receive();
+	              /* We only exit the xmodem protocol, if there are any errors.
+	              * In that case, notify the user and start over. */
+	              uart_transmit_str((uint8_t*)"\n\rFailed... Please try again.\n\r");
+	          }
+	          else if(setup == 3)
+	          {
+	              if(ringbuf_get(&uart4_buffer, &temp_data))
+	              {
+	                  uart5_transmit_ch(temp_data);
+	              }
+	              if(ringbuf_get(&uart5_buffer, &temp_data))
+	              {
+	                  uart_transmit_ch(temp_data);
+	              }
+	              else
+	              {
+	                  HAL_Delay(10);
+	              }
+	          }
+	          else
+	          {
+	              HAL_Delay(10);
+	          }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
