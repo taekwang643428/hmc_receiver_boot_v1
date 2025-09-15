@@ -1,10 +1,6 @@
 /**
  * @file    uart.h
- * @author  Ferenc Nemeth
- * @date    21 Dec 2018
- * @brief   This module is a layer between the HAL UART functions and my Xmodem protocol.
- *
- *          Copyright (c) 2018 Ferenc Nemeth - https://github.com/ferenc-nemeth
+ * @brief	.
  */
 
 #ifndef UART_H_
@@ -14,8 +10,8 @@
 #include "stm32f4xx_hal.h"
 #include "ringbuf.h"
 
-//extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart4;
+extern UART_HandleTypeDef huart5;
 extern ringbuf uart4_buffer; 
 extern ringbuf uart5_buffer; 
 

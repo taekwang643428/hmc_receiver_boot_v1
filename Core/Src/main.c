@@ -218,6 +218,7 @@ int main(void)
               i = 0;
               HAL_GPIO_WritePin(PHY_RESET_GPIO_Port, PHY_RESET_Pin, GPIO_PIN_SET);
               flash_jump_to_app();
+
           }
           else if(rdata == '~')
           {
